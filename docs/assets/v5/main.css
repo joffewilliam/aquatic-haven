@@ -1,4 +1,4 @@
-/* NON-CRITICAL CSS — preloaded, applied via media=print/onload swap so it never
+/* NON-CRITICAL CSS - preloaded, applied via media=print/onload swap so it never
    blocks first paint. Hover polish, motion, responsive tweaks. */
 .card, .dept { transition: border-color .14s, box-shadow .14s, transform .14s; }
 .card { animation: rise .16s ease both; }
@@ -25,8 +25,10 @@
 }
 @media (max-width: 640px) {
   .masthead { height: auto; min-height: var(--mh); flex-wrap: wrap; gap: 9px 12px; padding: 9px 16px 11px; }
-  .brand { flex: 1 1 auto; }
-  .brand span { display: none; }
+  .brand { flex: 1 1 178px; min-width: 0; }
+  .brand-mark { width: 34px; height: 34px; }
+  .brand-name { font-size: 15px; }
+  .brand-sub { font-size: 9px; }
   .search { order: 3; flex: 1 0 100%; }
   .acct { margin-left: 0; gap: 12px; }
   .foot-in { grid-template-columns: 1fr; }

@@ -1,6 +1,6 @@
 // Pull a free product image for every catalog item.
 // Primary: loremflickr (keyword-based Creative-Commons Flickr photos, no API key).
-// Fallback: picsum.photos. Idempotent — skips files already present.
+// Fallback: picsum.photos. Idempotent - skips files already present.
 //   node scripts/fetch-images.mjs
 import { mkdir, writeFile, stat } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
@@ -35,7 +35,7 @@ async function getImage(url, ms = 20000) {
 }
 
 // Resolve MANY Wikipedia titles to lead-image URLs in batched API calls (≤40
-// titles/call) — the api.php endpoint rate-limits per-request floods, so we make
+// titles/call) - the api.php endpoint rate-limits per-request floods, so we make
 // ~2 calls instead of one per species. Image bytes come from the CDN afterward.
 const WIKI_UA = 'AquaticHavenDemo/1.0 (educational demo; https://example.com/aquatic-haven)';
 let wikiMap = new Map(); // title -> thumbnail source URL

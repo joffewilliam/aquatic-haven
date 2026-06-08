@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Aquatic Haven — a hobby fish store in the clean, dense McMaster-Carr style,
+// Aquatic Haven - a hobby fish store in the clean, dense McMaster-Carr style,
 // built with McMaster's performance techniques: app shell + inlined critical CSS,
 // zero render-blocking <head>, prefetch-on-hover client nav, immutable versioned
 // assets. Bump VER on any asset change to bust the immutable cache.
@@ -12,14 +12,32 @@ import { CATEGORIES, PRODUCTS, catBySlug, bySlug, byCat, featured } from './cata
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = +(process.env.PORT || 8000);
-const VER = 'v4';
+const VER = 'v5';
 const SKILL_REPO_URL = 'https://github.com/joffewilliam/skills';
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const money = n => '$' + n.toFixed(2);
 const stars = r => { const f = Math.round(r); return '★★★★★'.slice(0, f) + '☆☆☆☆☆'.slice(0, 5 - f); };
 const reviews = p => 6 + (p.n * 13) % 180;
-const ICON = { 'freshwater-fish': '🐟', 'saltwater-fish': '🐠', 'live-plants': '🌿', 'tanks': '🪟', 'filtration': '💧', 'lighting': '💡', 'heating': '🌡️', 'food': '🍤', 'water-care': '🧪', 'decor': '🪨' };
+const icon = body => `<svg class="i" aria-hidden="true" viewBox="0 0 24 24">${body}</svg>`;
+const ICON = {
+  'freshwater-fish': icon('<path d="M3.5 12c2.9-3.9 8.8-5.4 14-1.5l3-2.2v7.4l-3-2.2c-5.2 3.9-11.1 2.4-14-1.5Z"/><path d="M8.2 9.5c1.2 1.4 1.2 3.6 0 5"/><circle cx="14.7" cy="11.2" r=".7" fill="currentColor" stroke="none"/>'),
+  'saltwater-fish': icon('<path d="M3.6 12c3.3-4.2 9.1-5.1 13.2-1.6l3.6-2.6v8.4l-3.6-2.6C12.7 17.1 6.9 16.2 3.6 12Z"/><path d="M8.5 8.6c1.6 1.8 1.6 5 0 6.8"/><path d="M12.4 9.2l-1.7-2.1M12.5 14.8l-1.8 2.1"/><circle cx="14.6" cy="11.2" r=".7" fill="currentColor" stroke="none"/>'),
+  'live-plants': icon('<path d="M12 21V9"/><path d="M12 12c-4.5 0-7-2.4-7-6 4.5 0 7 2.4 7 6Z"/><path d="M12 15c4.5 0 7-2.4 7-6-4.5 0-7 2.4-7 6Z"/>'),
+  'tanks': icon('<rect x="4" y="5" width="16" height="14" rx="2"/><path d="M7 13c2.4-1.8 4.8-1.8 7.2 0 1.5 1.1 3.1 1.1 4.8 0"/><path d="M8 8h8"/>'),
+  'filtration': icon('<path d="M8 4h8v16H8z"/><path d="M8 8h8M8 12h8M8 16h8"/><path d="M5 7h3M16 17h3"/>'),
+  'lighting': icon('<path d="M8 11a4 4 0 1 1 8 0c0 1.7-1.1 2.6-2 3.5-.5.5-.8 1-.8 1.5h-2.4c0-.5-.3-1-.8-1.5-.9-.9-2-1.8-2-3.5Z"/><path d="M10 19h4M10.5 22h3"/><path d="M4 11h1.5M18.5 11H20M6.3 5.3l1.1 1.1M16.6 6.4l1.1-1.1"/>'),
+  'heating': icon('<path d="M14 14.8V5a3 3 0 0 0-6 0v9.8a5 5 0 1 0 6 0Z"/><path d="M11 6v10"/><path d="M11 18h.01"/>'),
+  'food': icon('<path d="M5 7h14"/><path d="M7 7l1.2 11h7.6L17 7"/><path d="M9 11h6M9.5 14h5"/><path d="M10 4h4l1 3H9l1-3Z"/>'),
+  'water-care': icon('<path d="M9 3h6"/><path d="M10 3v5.2L6.3 16a4 4 0 0 0 3.6 5.8h4.2a4 4 0 0 0 3.6-5.8L14 8.2V3"/><path d="M8.2 16h7.6"/>'),
+  'decor': icon('<path d="M4 18c2.8-5.5 6.2-8.7 10.2-9.7 2.1-.5 4.4.1 5.8 1.7-1.2 5.2-5 8-11.2 8H4Z"/><path d="M8.5 15.5c1.6-1.9 3.4-3.2 5.5-3.8"/>'),
+};
+const UI_ICON = {
+  home: icon('<path d="M4 11.5 12 5l8 6.5"/><path d="M6.5 10.5V20h11v-9.5"/><path d="M10 20v-5h4v5"/>'),
+  shield: icon('<path d="M12 3 5.5 5.6v5.2c0 4.2 2.7 7.9 6.5 9.2 3.8-1.3 6.5-5 6.5-9.2V5.6L12 3Z"/><path d="m9.3 12 1.8 1.8 3.8-4.1"/>'),
+  cart: icon('<path d="M6.5 6h14l-1.8 8H8L6.5 6Z"/><path d="M6.5 6 5.9 3.8H3.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/>'),
+  repo: icon('<path d="M6 4.5h9.6L19 8v11.5H6z"/><path d="M15.5 4.5V8H19"/><path d="M9 12h6M9 15h6"/><path d="M4 7.5v12h12"/>'),
+};
 const pick = (arr, seed) => arr[seed % arr.length];
 
 function specs(p) {
@@ -34,7 +52,7 @@ function specs(p) {
   ];
   if (p.cat === 'live-plants') return [
     ['Placement', pick(['Foreground', 'Midground', 'Background'], s)],
-    ['Lighting', pick(['Low', 'Low–Medium', 'Medium', 'High'], s + 1)],
+    ['Lighting', pick(['Low', 'Low-Medium', 'Medium', 'High'], s + 1)],
     ['CO₂', pick(['Not required', 'Optional', 'Recommended'], s + 2)],
     ['Growth Rate', pick(['Slow', 'Moderate', 'Fast'], s + 3)],
     ['Difficulty', pick(['Easy', 'Easy', 'Moderate'], s + 4)],
@@ -67,8 +85,8 @@ function homeView() {
   return `<section class="hero"><div class="hero-txt">
       <span class="eyebrow">Aquarium supply · since 1998</span>
       <h1>Your aquarium, fully stocked</h1>
-      <p>${PRODUCTS.length} products across ${CATEGORIES.length} departments — fish, plants, and gear, shipped same day with a live-arrival guarantee.</p>
-      <span class="hero-ctas"><a class="btn" href="${SKILL_REPO_URL}" target="_blank" rel="noopener">Use this skill</a><a class="btn ghost" data-nav href="/c/freshwater-fish">Explore the demo</a></span>
+      <p>${PRODUCTS.length} products across ${CATEGORIES.length} departments, with fish, plants, and gear shipped same day under a live-arrival guarantee.</p>
+      <span class="hero-ctas"><a class="btn btn-icon" href="${SKILL_REPO_URL}" target="_blank" rel="noopener">${UI_ICON.repo}Use this skill</a><a class="btn ghost" data-nav href="/c/freshwater-fish">Explore the demo</a></span>
     </div></section>
     <h2 class="sec">Shop by department</h2>
     <div class="depts">${CATEGORIES.map(deptTile).join('')}</div>
@@ -104,7 +122,7 @@ function productView(slug) {
         <h1>${esc(p.name)}</h1>
         <p class="rate big">${stars(p.rating)} <span class="muted">${p.rating.toFixed(1)} · ${reviews(p)} reviews · ${p.sku}</span></p>
         <p class="price big">${money(p.price)} <span class="muted unit">each</span></p>
-        <p class="badge big ${p.stock ? 'in' : 'out'}">${p.stock ? 'In stock — ships same day' : 'On backorder'}</p>
+        <p class="badge big ${p.stock ? 'in' : 'out'}">${p.stock ? 'In stock, ships same day' : 'On backorder'}</p>
         <p class="blurb">${esc(p.blurb)}</p>
         ${buy}
         <table class="specs"><caption>Specifications</caption><tbody>${sp}</tbody></table>
@@ -127,7 +145,7 @@ function searchProducts(q) {
 function searchView(q) {
   const items = searchProducts(q);
   const head = `<nav class="crumb"><a data-nav href="/">Store</a><span>›</span>Search</nav>
-    <header class="pagehead"><h1>Search results</h1><p class="lede">“${esc(q)}” — ${items.length} match${items.length === 1 ? '' : 'es'}</p></header>`;
+    <header class="pagehead"><h1>Search results</h1><p class="lede">“${esc(q)}” - ${items.length} match${items.length === 1 ? '' : 'es'}</p></header>`;
   if (!items.length) return `${head}<p class="empty">No products match “${esc(q)}”. Try <a data-nav href="/c/freshwater-fish">freshwater fish</a>, “filter”, “plant”, or “tank”.</p>`;
   return head + grid(items);
 }
@@ -136,10 +154,10 @@ const cartShellView = () => `<div data-cart-root><h1>Your Cart</h1><p class="mut
 
 // ---------- app shell ----------
 const sidebar = active => `<aside class="sidebar"><div class="side-h">Shop by Department</div><nav class="deptnav">
-  <a data-nav href="/"${active === '/' ? ' class="active"' : ''}><span class="di">🏠</span><span class="dn-name">Home</span></a>
+  <a data-nav href="/"${active === '/' ? ' class="active"' : ''}><span class="di">${UI_ICON.home}</span><span class="dn-name">Home</span></a>
   ${CATEGORIES.map(c => `<a data-nav href="/c/${c.slug}"${active === '/c/' + c.slug ? ' class="active"' : ''}><span class="di">${ICON[c.slug]}</span><span class="dn-name">${esc(c.name)}</span><span class="dn-n">${byCat[c.slug].length}</span></a>`).join('')}
   </nav>
-  <div class="side-promo"><b>🐟 Live arrival guarantee</b><span>Free shipping over $49 · ships same day</span></div></aside>`;
+  <div class="side-promo"><b>${UI_ICON.shield} Live arrival guarantee</b><span>Free shipping over $49 · ships same day</span></div></aside>`;
 
 const footer = `<footer class="site"><div class="foot-in">
   <div class="foot-col"><h4>Shop</h4>${CATEGORIES.slice(0, 6).map(c => `<a data-nav href="/c/${c.slug}">${esc(c.name)}</a>`).join('')}</div>
@@ -154,7 +172,9 @@ a{color:inherit;text-decoration:none}button{font:inherit}
 .promo{background:var(--deep);color:#d7eef5;font-size:12.5px;text-align:center;padding:5px 12px;letter-spacing:.01em}
 .promo b{color:var(--gold)}
 .masthead{display:flex;align-items:center;gap:18px;height:var(--mh);padding:0 20px;background:linear-gradient(90deg,#063b4c,#0b7a9b);color:#fff;position:sticky;top:0;z-index:30}
-.brand{font-size:19px;font-weight:800;letter-spacing:-.4px;white-space:nowrap;color:#fff}.brand span{font-weight:500;opacity:.82}
+.brand{display:flex;align-items:center;gap:9px;white-space:nowrap;color:#fff;min-width:188px}
+.brand-mark{width:36px;height:36px;object-fit:contain;flex:none}.brand-copy{display:flex;flex-direction:column;line-height:1.03}.brand-name{font-size:16px;font-weight:850;letter-spacing:0}.brand-sub{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#c7e7ef}
+.i{width:1em;height:1em;display:inline-block;vertical-align:-.15em;fill:none;stroke:currentColor;stroke-width:1.85;stroke-linecap:round;stroke-linejoin:round}
 .search{position:relative;flex:1;max-width:600px;display:flex}
 .search input{min-width:0;flex:1;height:36px;padding:0 13px;border:0;border-radius:5px 0 0 5px;font-size:14px;color:var(--ink)}
 .search input:focus{outline:2px solid var(--gold)}
@@ -164,7 +184,7 @@ a{color:inherit;text-decoration:none}button{font:inherit}
 .suggest a:last-child{border-bottom:0}.suggest a:hover,.suggest a.hi{background:#eef7fa}
 .suggest .s-cat{color:var(--mut);font-size:12px}.suggest .s-price{color:var(--green);font-weight:700}
 .acct{margin-left:auto;display:flex;gap:16px;align-items:center;font-size:13px;white-space:nowrap}
-.acct a{color:#fff}.cartlink{display:inline-flex;align-items:center;gap:6px;font-weight:600}
+.acct a{color:#fff}.cartlink{display:inline-flex;align-items:center;gap:6px;font-weight:600}.cartlink .i{width:17px;height:17px}
 .cc{background:var(--coral);color:#fff;border-radius:11px;min-width:19px;text-align:center;padding:1px 6px;font-size:12px;font-weight:800}
 .shellwrap{display:flex;align-items:flex-start}
 .sidebar{width:250px;flex:none;background:#fff;border-right:1px solid var(--line);position:sticky;top:var(--mh);height:calc(100vh - var(--mh));overflow-y:auto;padding:14px 0 22px}
@@ -172,11 +192,11 @@ a{color:inherit;text-decoration:none}button{font:inherit}
 .deptnav{display:flex;flex-direction:column}
 .deptnav a{display:flex;align-items:center;gap:10px;padding:8px 18px;font-size:13.5px;border-left:3px solid transparent}
 .deptnav a:hover{background:var(--bg)}.deptnav a.active{background:#e9f5f9;color:var(--sea);font-weight:700;border-left-color:var(--sea)}
-.deptnav .di{font-size:15px;width:18px;text-align:center}.dn-name{flex:1}.dn-n{font-size:11px;color:#90a6ad;background:var(--bg);border-radius:9px;padding:1px 7px}
-.side-promo{margin:14px 14px 0;padding:12px;background:linear-gradient(135deg,#e9f5f9,#f3f7f8);border:1px solid var(--line);border-radius:9px;font-size:12px;display:flex;flex-direction:column;gap:4px;color:var(--mut)}.side-promo b{color:var(--ink)}
+.di{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;margin-right:.35em;color:currentColor;flex:none}.deptnav .di{margin-right:0;color:#477282}.dn-name{flex:1}.dn-n{font-size:11px;color:#90a6ad;background:var(--bg);border-radius:9px;padding:1px 7px}
+.side-promo{margin:14px 14px 0;padding:12px;background:linear-gradient(135deg,#e9f5f9,#f3f7f8);border:1px solid var(--line);border-radius:9px;font-size:12px;display:flex;flex-direction:column;gap:4px;color:var(--mut)}.side-promo b{color:var(--ink);display:flex;align-items:center;gap:7px}.side-promo .i{color:var(--sea);width:17px;height:17px}
 .content{flex:1;min-width:0;padding:18px 26px 30px;max-width:1320px}
 main{min-width:0}
-h1{font-size:22px;margin:.1em 0 .5em}.di{margin-right:.35em}
+h1{font-size:22px;margin:.1em 0 .5em}
 h2.sec{font-size:16px;margin:26px 0 13px;padding-bottom:7px;border-bottom:2px solid var(--line)}
 .crumb{color:var(--mut);font-size:12.5px;margin-bottom:8px;display:flex;gap:7px;flex-wrap:wrap}.crumb a{color:var(--sea)}.crumb span{color:#b7c6cb}
 .pagehead h1{margin-bottom:.1em}.lede{color:var(--mut);margin:.1em 0 .2em;max-width:70ch}
@@ -186,14 +206,14 @@ h2.sec{font-size:16px;margin:26px 0 13px;padding-bottom:7px;border-bottom:2px so
 .hero .eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#bfe6f0}
 .hero h1{font-size:30px;margin:.2em 0;color:#fff}.hero p{max-width:62ch;color:#e4f3f7;margin:.2em 0 1em}
 .hero-ctas{display:flex;gap:10px;flex-wrap:wrap}
-.btn{display:inline-block;background:var(--gold);color:#3a2c00;font-weight:700;padding:10px 18px;border-radius:7px}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:#3a2c00;font-weight:700;padding:10px 18px;border-radius:7px}.btn .i{width:16px;height:16px}
 .btn.ghost{background:rgba(255,255,255,.14);color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.5)}
 .depts{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:14px}
 .dept{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff;display:flex;flex-direction:column}
 .dept-imgs{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line)}
 .dept-imgs img{width:100%;height:70px;object-fit:cover;display:block;background:var(--tile)}
 .dept-name{padding:11px 13px;font-weight:700;font-size:14.5px;display:flex;flex-direction:column;gap:1px}
-.dept-name .dept-n{font-weight:400;font-size:12px;color:var(--mut)}.dept-name .di{font-size:15px}
+.dept-name .dept-n{font-weight:400;font-size:12px;color:var(--mut)}.dept-name .di{color:var(--sea);margin-bottom:2px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:14px}
 .card{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:10px;background:#fff;padding:12px;color:inherit}
 .thumb{display:block;border-radius:7px;overflow:hidden;background:var(--tile);aspect-ratio:4/3;margin-bottom:10px}
@@ -248,16 +268,18 @@ const shell = (main, title, active) => `<!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)} · Aquatic Haven</title>
-<meta name="description" content="Aquatic Haven — fish, plants, and aquarium gear shipped same day.">
+<meta name="description" content="Aquatic Haven: fish, plants, and aquarium gear shipped same day.">
 <link rel="dns-prefetch" href="//upload.wikimedia.org">
 <link rel="preload" href="/assets/${VER}/app.js" as="script">
 <link rel="preload" href="/assets/${VER}/main.css" as="style">
+<link rel="preload" href="/assets/${VER}/img/aquatic-haven-logo-64.png" as="image">
+<link rel="icon" type="image/png" href="/assets/${VER}/img/aquatic-haven-logo-64.png">
 <style>${CRITICAL}</style>
 </head><body>
-<div class="promo">🐟 <b>Live arrival guarantee</b> · Free shipping over $49 · 98% of orders ship same day</div>
-<header class="masthead"><a class="brand" data-nav href="/">Aquatic&nbsp;Haven <span>· aquarium supply</span></a>
-<form class="search" role="search" autocomplete="off"><input id="q" name="q" type="search" placeholder="Search ${PRODUCTS.length} products — fish, plants, gear" aria-label="Search" autocomplete="off"><button class="sbtn" type="submit">Search</button><div id="suggest" class="suggest" hidden></div></form>
-<span class="acct"><a>Account</a><a class="cartlink" data-cart href="/cart">🛒 Cart <span id="cc" class="cc" hidden>0</span></a></span></header>
+<div class="promo"><b>Live arrival guarantee</b> · Free shipping over $49 · 98% of orders ship same day</div>
+<header class="masthead"><a class="brand" data-nav href="/"><img class="brand-mark" src="/assets/${VER}/img/aquatic-haven-logo-64.png" width="36" height="36" alt=""><span class="brand-copy"><span class="brand-name">Aquatic Haven</span><span class="brand-sub">Aquarium Supply</span></span></a>
+<form class="search" role="search" autocomplete="off"><input id="q" name="q" type="search" placeholder="Search ${PRODUCTS.length} products: fish, plants, gear" aria-label="Search" autocomplete="off"><button class="sbtn" type="submit">Search</button><div id="suggest" class="suggest" hidden></div></form>
+<span class="acct"><a>Account</a><a class="cartlink" data-cart href="/cart">${UI_ICON.cart}Cart <span id="cc" class="cc" hidden>0</span></a></span></header>
 <div class="shellwrap">${sidebar(active)}<div class="content"><main id="app">${main}</main></div></div>
 ${footer}
 <div id="flash"></div>
@@ -310,7 +332,7 @@ const server = http.createServer(async (req, res) => {
       const pr = bySlug[slug];
       return send(res, pr ? 200 : 404, shell(productView(slug), pr ? pr.name : 'Not found', '/c/' + (pr ? pr.cat : '')), DOC);
     }
-    return send(res, 404, shell('<h1>404 — not found</h1><p><a data-nav href="/">Back to store</a></p>', 'Not found', ''), DOC);
+    return send(res, 404, shell('<h1>404 - not found</h1><p><a data-nav href="/">Back to store</a></p>', 'Not found', ''), DOC);
   } catch (e) {
     return send(res, 500, 'error: ' + e.message);
   }

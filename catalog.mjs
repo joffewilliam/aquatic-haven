@@ -1,4 +1,4 @@
-// Aquatic Haven — deterministic 120-product catalog (stable ids, prices, slugs).
+// Aquatic Haven - deterministic 120-product catalog (stable ids, prices, slugs).
 // `kw` + `lock` drive the free image download (scripts/fetch-images.mjs).
 
 export const CATEGORIES = [
@@ -47,7 +47,7 @@ const BLURB = {
 };
 
 // Accurate-species image source: Wikipedia article titles (resolved via redirects).
-// Only fish & plants — equipment keeps keyword photos. Missing/imageless titles
+// Only fish & plants - equipment keeps keyword photos. Missing/imageless titles
 // fall back to loremflickr in the downloader.
 const WIKI = {
   'Neon Tetra': 'Neon tetra', 'Cardinal Tetra': 'Cardinal tetra', 'Betta Splendens': 'Siamese fighting fish',
@@ -91,9 +91,9 @@ for (const cat of CATEGORIES) {
       cat: cat.slug, catName: cat.name,
       price, sku: `AH-${id}`,
       stock: n % 11 !== 0,           // ~9 items out of stock
-      rating: 3.6 + ((n * 7) % 14) / 10, // 3.6–4.9
+      rating: 3.6 + ((n * 7) % 14) / 10, // 3.6-4.9
       blurb: BLURB[cat.slug](name),
-      img: `/assets/v4/img/${id}.jpg`,
+      img: `/assets/v5/img/${id}.jpg`,
       kw: cat.kw, lock: n, wiki: WIKI[name] || null,
     });
   });

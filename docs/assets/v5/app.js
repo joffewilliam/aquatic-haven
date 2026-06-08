@@ -117,7 +117,7 @@
   function staticSearchHtml(q) {
     var items = productMatches(q);
     var head = '<nav class="crumb"><a data-nav href="' + toUrl('/') + '">Store</a><span>›</span>Search</nav>' +
-      '<header class="pagehead"><h1>Search results</h1><p class="lede">"' + esc(q) + '" — ' + items.length + ' match' + (items.length === 1 ? '' : 'es') + '</p></header>';
+      '<header class="pagehead"><h1>Search results</h1><p class="lede">"' + esc(q) + '" - ' + items.length + ' match' + (items.length === 1 ? '' : 'es') + '</p></header>';
     if (!items.length) return head + '<p class="empty">No products match "' + esc(q) + '". Try <a data-nav href="' + toUrl('/c/freshwater-fish') + '">freshwater fish</a>, "filter", "plant", or "tank".</p>';
     return head + '<div class="grid">' + items.map(cardHtml).join('') + '</div>';
   }
@@ -135,7 +135,7 @@
       app.innerHTML = '<div class="cart"><h1>Order placed 🎉</h1><div class="ordered">✓ Thank you! Your order of <b>' + n +
         ' item' + (n === 1 ? '' : 's') + '</b> (' + fmt(tot) + ') is confirmed and ships same day with our live-arrival guarantee. ' +
         '<a data-nav href="' + toUrl('/') + '">Continue shopping →</a></div></div>';
-      note('Order placed — ' + fmt(tot));
+      note('Order placed - ' + fmt(tot));
       return;
     }
     renderCart();
@@ -197,7 +197,7 @@
       if (inp) inp.value = Math.max(1, (parseInt(inp.value, 10) || 1) + parseInt(q.getAttribute('data-q'), 10));
       return;
     }
-    // add to cart — works as quick-add inside a card link OR the product-page button
+    // add to cart - works as quick-add inside a card link OR the product-page button
     var add = e.target.closest('[data-add]');
     if (add) {
       e.preventDefault(); e.stopPropagation();
