@@ -1,0 +1,34 @@
+/* NON-CRITICAL CSS — preloaded, applied via media=print/onload swap so it never
+   blocks first paint. Hover polish, motion, responsive tweaks. */
+.card, .dept { transition: border-color .14s, box-shadow .14s, transform .14s; }
+.card { animation: rise .16s ease both; }
+@keyframes rise { from { transform: translateY(5px); opacity: .55 } to { transform: none; opacity: 1 } }
+.card:hover { border-color: var(--sea); box-shadow: 0 6px 18px rgba(6, 59, 76, .12); transform: translateY(-2px); }
+.card:hover .thumb img { transform: scale(1.05); }
+.thumb img { transition: transform .25s ease; }
+.dept:hover { border-color: var(--sea); box-shadow: 0 6px 18px rgba(6, 59, 76, .12); transform: translateY(-2px); }
+.dept:hover .dept-name { color: var(--sea); }
+.qadd, .buy, .checkout, .btn { transition: background .14s, color .14s, transform .06s; }
+.qadd:active, .buy:active, .checkout:active { transform: translateY(1px); }
+.btn:hover { filter: brightness(1.05); }
+.detail-media img { transition: transform .3s ease; }
+.detail-media:hover img { transform: scale(1.03); }
+.deptnav a { transition: background .12s, color .12s; }
+.cart-row { animation: rise .16s ease both; }
+.detail, .pagehead, .hero { animation: rise .2s ease both; }
+@media (max-width: 860px) {
+  .sidebar { display: none; }
+  .detail { grid-template-columns: 1fr; }
+  .detail-media { max-width: 460px; }
+  .search { max-width: none; }
+  .foot-in { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .masthead { height: auto; min-height: var(--mh); flex-wrap: wrap; gap: 9px 12px; padding: 9px 16px 11px; }
+  .brand { flex: 1 1 auto; }
+  .brand span { display: none; }
+  .search { order: 3; flex: 1 0 100%; }
+  .acct { margin-left: 0; gap: 12px; }
+  .foot-in { grid-template-columns: 1fr; }
+}
+@media print { .promo, .masthead, .sidebar, #flash, footer.site { display: none; } }

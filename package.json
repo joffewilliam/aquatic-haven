@@ -1,0 +1,12 @@
+{
+  "name": "aquatic-haven",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Hobby fish store clone built with McMaster-Carr performance techniques (app shell, inlined critical CSS, prefetch-on-hover, immutable versioned assets).",
+  "scripts": {
+    "build:static": "node scripts/build-static.mjs",
+    "images": "node scripts/fetch-images.mjs",
+    "start": "node server.mjs"
+  }
+}
