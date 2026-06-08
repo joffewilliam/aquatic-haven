@@ -26,7 +26,7 @@
 @media (max-width: 640px) {
   .masthead { height: auto; min-height: var(--mh); flex-wrap: wrap; gap: 9px 12px; padding: 9px 16px 11px; }
   .brand { flex: 1 1 178px; min-width: 0; }
-  .brand-mark { width: 34px; height: 34px; }
+  .brand-mark { width: 36px; height: 36px; padding: 3px; }
   .brand-name { font-size: 15px; }
   .brand-sub { font-size: 9px; }
   .search { order: 3; flex: 1 0 100%; }

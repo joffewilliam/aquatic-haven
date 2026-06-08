@@ -12,7 +12,7 @@ import { CATEGORIES, PRODUCTS, catBySlug, bySlug, byCat, featured } from './cata
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = +(process.env.PORT || 8000);
-const VER = 'v5';
+const VER = 'v6';
 const SKILL_REPO_URL = 'https://github.com/joffewilliam/skills';
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -172,8 +172,8 @@ a{color:inherit;text-decoration:none}button{font:inherit}
 .promo{background:var(--deep);color:#d7eef5;font-size:12.5px;text-align:center;padding:5px 12px;letter-spacing:.01em}
 .promo b{color:var(--gold)}
 .masthead{display:flex;align-items:center;gap:18px;height:var(--mh);padding:0 20px;background:linear-gradient(90deg,#063b4c,#0b7a9b);color:#fff;position:sticky;top:0;z-index:30}
-.brand{display:flex;align-items:center;gap:9px;white-space:nowrap;color:#fff;min-width:188px}
-.brand-mark{width:36px;height:36px;object-fit:contain;flex:none}.brand-copy{display:flex;flex-direction:column;line-height:1.03}.brand-name{font-size:16px;font-weight:850;letter-spacing:0}.brand-sub{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#c7e7ef}
+.brand{display:flex;align-items:center;gap:9px;white-space:nowrap;color:#fff;min-width:194px}
+.brand-mark{width:40px;height:40px;object-fit:contain;flex:none;background:#fff;border-radius:50%;padding:4px;box-sizing:border-box;box-shadow:0 0 0 1px rgba(255,255,255,.7),0 1px 4px rgba(2,23,32,.22)}.brand-copy{display:flex;flex-direction:column;line-height:1.03}.brand-name{font-size:16px;font-weight:850;letter-spacing:0}.brand-sub{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#c7e7ef}
 .i{width:1em;height:1em;display:inline-block;vertical-align:-.15em;fill:none;stroke:currentColor;stroke-width:1.85;stroke-linecap:round;stroke-linejoin:round}
 .search{position:relative;flex:1;max-width:600px;display:flex}
 .search input{min-width:0;flex:1;height:36px;padding:0 13px;border:0;border-radius:5px 0 0 5px;font-size:14px;color:var(--ink)}

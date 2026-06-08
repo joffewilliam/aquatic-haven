@@ -21,7 +21,7 @@ This repo is designed to publish through GitHub Pages from `main` using the
 https://joffewilliam.github.io/aquatic-haven/
 
 > **Hard-refresh after updating an asset.** Assets are served `immutable`, so the
-> browser pins them. We bump the version segment (currently `/assets/v5`,
+> browser pins them. We bump the version segment (currently `/assets/v6`,
 > the `VER` constant in `server.mjs` + the `img` path in `catalog.mjs`) on every
 > change so the URL, and the cache, busts. This is McMaster's cache-busting
 > model; it's also why a stale `app.js` can make the cart look broken until you
@@ -37,7 +37,7 @@ https://joffewilliam.github.io/aquatic-haven/
   results page (`/search?q=`), both server-filtered over the catalog.
 - **Accurate product images**: fish & plants use their Wikipedia lead photo
   (55/56 species); equipment uses keyword photos. Pulled by `scripts/fetch-images.mjs`.
-- **Generated logo mark**: `public/assets/v5/img/aquatic-haven-logo.png`,
+- **Generated logo mark**: `public/assets/v6/img/aquatic-haven-logo.png`,
   created with image generation and exported as transparent PNG variants.
 - **Public skill CTA**: the hero's "Use this skill" button points at `SKILL_REPO_URL`
   in `server.mjs`: `https://github.com/joffewilliam/skills`.
@@ -48,8 +48,8 @@ https://joffewilliam.github.io/aquatic-haven/
 |---|---|
 | App shell + **inlined critical CSS**, zero render-blocking `<head>` | `server.mjs` `CRITICAL` / `shell()` |
 | Non-critical CSS via `preload` + `media=print/onload` swap; JS `defer` | `server.mjs` `shell()` |
-| **Prefetch-on-hover** + memoize + `#app` swap + `pushState` (no reload) | `public/assets/v5/app.js` |
-| **Immutable, version-prefixed assets** (`/assets/v5/...`, `max-age=31536000, immutable`); `no-cache` document | `server.mjs` headers, `VER` |
+| **Prefetch-on-hover** + memoize + `#app` swap + `pushState` (no reload) | `public/assets/v6/app.js` |
+| **Immutable, version-prefixed assets** (`/assets/v6/...`, `max-age=31536000, immutable`); `no-cache` document | `server.mjs` headers, `VER` |
 | Personalized parts (cart) kept `no-cache` / client-rendered | `cartShellView()`, `app.js` cart module |
 | Persistent **sidebar** with active-state sync on client nav | `server.mjs` `sidebar()`, `app.js` `setActive()` |
 | Lazy-loaded product images with fixed dimensions (no CLS) | `card()` in `server.mjs` |
@@ -68,9 +68,9 @@ node .claude/skills/mcmaster-web-performance/audit.mjs http://localhost:8000
 
 - `catalog.mjs`: deterministic 120-product catalog (10 departments).
 - `server.mjs`: app shell, sidebar, routes (`/`, `/c/:cat`, `/p/:product`), `/fragment/*` prefetch endpoints, immutable asset serving.
-- `public/assets/v5/app.js`: prefetch-on-hover engine.
-- `public/assets/v5/main.css`: non-critical deferred styles.
-- `public/assets/v5/img/`: 120 free images, generated hero background, and generated logo assets.
+- `public/assets/v6/app.js`: prefetch-on-hover engine.
+- `public/assets/v6/main.css`: non-critical deferred styles.
+- `public/assets/v6/img/`: 120 free images, generated hero background, and generated logo assets.
 - `scripts/fetch-images.mjs`: idempotent image downloader.
 
 Images are free Creative-Commons Flickr photos pulled by keyword (loremflickr),
