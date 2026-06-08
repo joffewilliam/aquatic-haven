@@ -12,7 +12,7 @@ import { CATEGORIES, PRODUCTS, catBySlug, bySlug, byCat, featured } from './cata
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = +(process.env.PORT || 8000);
-const VER = 'v6';
+const VER = 'v7';
 const SKILL_REPO_URL = 'https://github.com/joffewilliam/skills';
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -67,7 +67,7 @@ function specs(p) {
 
 // ---------- views (content of #app; reused for full render + prefetch fragments) ----------
 const card = p => `<a class="card" data-nav href="/p/${p.slug}">
-  <span class="thumb"><img src="${p.img}" width="220" height="165" loading="lazy" decoding="async" alt="${esc(p.name)}"></span>
+  <span class="thumb"><img src="${p.img}" width="220" height="165" loading="eager" decoding="async" alt="${esc(p.name)}"></span>
   <span class="pname">${esc(p.name)}</span>
   <span class="pcat">${esc(p.catName)}</span>
   <span class="meta"><b class="price">${money(p.price)}</b><span class="rate" title="${p.rating.toFixed(1)} of 5">${stars(p.rating)}</span></span>
@@ -77,7 +77,7 @@ const grid = items => `<div class="grid">${items.map(card).join('')}</div>`;
 
 const deptTile = c => {
   const items = byCat[c.slug];
-  const thumbs = items.slice(0, 4).map(p => `<img src="${p.img}" alt="" loading="lazy" width="92" height="70" decoding="async">`).join('');
+  const thumbs = items.slice(0, 4).map(p => `<img src="${p.img}" alt="" loading="eager" width="92" height="70" decoding="async">`).join('');
   return `<a class="dept" data-nav href="/c/${c.slug}"><span class="dept-imgs">${thumbs}</span><span class="dept-name"><span class="di">${ICON[c.slug]}</span>${esc(c.name)}<span class="dept-n">${items.length} products</span></span></a>`;
 };
 

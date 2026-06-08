@@ -93,7 +93,7 @@ for (const cat of CATEGORIES) {
       stock: n % 11 !== 0,           // ~9 items out of stock
       rating: 3.6 + ((n * 7) % 14) / 10, // 3.6-4.9
       blurb: BLURB[cat.slug](name),
-      img: `/assets/v6/img/${id}.jpg`,
+      img: `/assets/v7/img/${id}.jpg`,
       kw: cat.kw, lock: n, wiki: WIKI[name] || null,
     });
   });

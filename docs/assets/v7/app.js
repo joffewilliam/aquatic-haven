@@ -75,7 +75,7 @@
     if (!c.length) return '<h1>Your Cart</h1><p class="cart-empty">Your cart is empty. <a data-nav href="' + toUrl('/') + '">Browse the store →</a></p>';
     var rows = c.map(function (i) {
       return '<div class="cart-row" data-id="' + i.id + '">' +
-        '<img src="' + i.img + '" alt="" width="72" height="54" loading="lazy">' +
+        '<img src="' + i.img + '" alt="" width="72" height="54" loading="eager">' +
         '<div><a class="ci-name" data-nav href="' + toUrl('/p/' + i.slug) + '">' + i.name + '</a>' +
         '<div class="ci-sub">' + fmt(i.price) + ' each · <button class="ci-rm" data-cart-act="rm" data-id="' + i.id + '">Remove</button></div></div>' +
         '<div class="qty"><button data-cart-act="dec" data-id="' + i.id + '" aria-label="Decrease">−</button>' +
@@ -86,7 +86,22 @@
       rows + '<div class="cart-tot"><span>Subtotal</span><b>' + fmt(cartTotal()) + '</b></div>' +
       '<button class="checkout" data-cart-act="checkout">Checkout →</button></div>';
   }
-  function renderCart() { app.innerHTML = cartHtml(); }
+  var imageWarmups = [];
+  function wakeImages(root) {
+    root = root || app;
+    root.querySelectorAll('.card img, .dept-imgs img, .detail-media img, .cart-row img').forEach(function (img) {
+      img.loading = 'eager';
+      if (img.complete && img.naturalWidth > 0) return;
+      var src = img.currentSrc || img.src;
+      if (!src) return;
+      var pre = new Image();
+      pre.decoding = 'async';
+      pre.src = src;
+      imageWarmups.push(pre);
+      if (imageWarmups.length > 160) imageWarmups.splice(0, imageWarmups.length - 160);
+    });
+  }
+  function renderCart() { app.innerHTML = cartHtml(); wakeImages(app); }
 
   function productMatches(q) {
     if (!staticProducts) return [];
@@ -105,7 +120,7 @@
 
   function cardHtml(p) {
     return '<a class="card" data-nav href="' + toUrl('/p/' + p.slug) + '">' +
-      '<span class="thumb"><img src="' + p.img + '" width="220" height="165" loading="lazy" decoding="async" alt="' + esc(p.name) + '"></span>' +
+      '<span class="thumb"><img src="' + p.img + '" width="220" height="165" loading="eager" decoding="async" alt="' + esc(p.name) + '"></span>' +
       '<span class="pname">' + esc(p.name) + '</span>' +
       '<span class="pcat">' + esc(p.catName) + '</span>' +
       '<span class="meta"><b class="price">' + fmt(p.price) + '</b><span class="rate" title="' + p.rating.toFixed(1) + ' of 5">' + stars(p.rating) + '</span></span>' +
@@ -177,6 +192,7 @@
     var t = performance.now();
     prefetch(href).then(function (html) {
       app.innerHTML = html;
+      wakeImages(app);
       if (push) history.pushState({ href: href }, '', toUrl(href));
       setActive(path); window.scrollTo(0, 0);
       note('navigated in ' + Math.round(performance.now() - t) + 'ms');
@@ -281,6 +297,10 @@
   if (appPath(initialPath) === '/cart') renderCart();
   else if (staticProducts && appPath(initialPath) === '/search') {
     app.innerHTML = staticSearchHtml(new URLSearchParams(initialPath.split('?')[1] || '').get('q') || '');
+    wakeImages(app);
     setActive('');
-  } else setActive(initialPath);
+  } else {
+    wakeImages(app);
+    setActive(initialPath);
+  }
 })();
