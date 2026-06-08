@@ -38,7 +38,7 @@ https://joffewilliam.github.io/aquatic-haven/
 - **Accurate product images** — fish & plants use their Wikipedia lead photo
   (55/56 species); equipment uses keyword photos. Pulled by `scripts/fetch-images.mjs`.
 - **Public skill CTA** — the hero's "Use this skill" button points at `SKILL_REPO_URL`
-  in `server.mjs`: `https://github.com/joffewilliam/skills/tree/main/mcmaster-web-performance`.
+  in `server.mjs`: `https://github.com/joffewilliam/skills`.
 
 ## Performance techniques
 

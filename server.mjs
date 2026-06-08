@@ -13,7 +13,7 @@ import { CATEGORIES, PRODUCTS, catBySlug, bySlug, byCat, featured } from './cata
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = +(process.env.PORT || 8000);
 const VER = 'v4';
-const SKILL_REPO_URL = 'https://github.com/joffewilliam/skills/tree/main/mcmaster-web-performance';
+const SKILL_REPO_URL = 'https://github.com/joffewilliam/skills';
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const money = n => '$' + n.toFixed(2);
