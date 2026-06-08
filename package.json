@@ -5,8 +5,10 @@
   "type": "module",
   "description": "Hobby fish store clone built with McMaster-Carr performance techniques (app shell, inlined critical CSS, prefetch-on-hover, immutable versioned assets).",
   "scripts": {
+    "audit:pagespeed": "node scripts/audit-pagespeed.mjs",
     "build:static": "node scripts/build-static.mjs",
     "images": "node scripts/fetch-images.mjs",
+    "preview:static": "node scripts/preview-static.mjs",
     "start": "node server.mjs"
   }
 }

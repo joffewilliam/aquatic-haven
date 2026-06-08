@@ -27,17 +27,18 @@ const staticProducts = PRODUCTS.map(p => ({
   sku: p.sku,
   price: p.price,
   img: withBase(p.img),
+  thumb: withBase(`/assets/${VER}/thumb/${p.id}.webp`),
   rating: p.rating,
   stock: p.stock,
 }));
+const productsJson = JSON.stringify(staticProducts).replace(/</g, '\\u003c');
 
 function withBase(path) {
   return path && path.startsWith('/') ? base + path : path;
 }
 
 function injectStaticData(html) {
-  const productsJson = JSON.stringify(staticProducts).replace(/</g, '\\u003c');
-  const data = `<script type="application/json" id="ah-products">${productsJson}</script><script>window.AH_BASE=${JSON.stringify(base)};window.AH_PRODUCTS=JSON.parse(document.getElementById('ah-products').textContent);</script>`;
+  const data = `<script>window.AH_BASE=${JSON.stringify(base)};window.AH_PRODUCTS_URL=${JSON.stringify(`${base}/assets/${VER}/catalog.json`)};</script>`;
   return html.replace('</head>', `${data}\n</head>`);
 }
 
@@ -57,6 +58,7 @@ async function writeRoute(route, html, fullPage = true) {
 await rm(out, { recursive: true, force: true });
 await mkdir(out, { recursive: true });
 await cp(join(root, 'public', 'assets', VER), join(out, 'assets', VER), { recursive: true });
+await writeFile(join(out, 'assets', VER, 'catalog.json'), productsJson);
 
 await writeRoute('/', shell(homeView(), 'Store', '/'));
 await writeRoute('/cart', shell(cartShellView(), 'Your Cart', ''));

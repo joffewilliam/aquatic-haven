@@ -66,18 +66,23 @@ function specs(p) {
 }
 
 // ---------- views (content of #app; reused for full render + prefetch fragments) ----------
-const card = p => `<a class="card" data-nav href="/p/${p.slug}">
-  <span class="thumb"><img src="${p.img}" width="220" height="165" loading="eager" decoding="async" alt="${esc(p.name)}"></span>
+const thumbSrc = p => `/assets/${VER}/thumb/${p.id}.webp`;
+const deptSrc = p => `/assets/${VER}/dept/${p.id}.webp`;
+const loadAttr = eager => `loading="${eager ? 'eager' : 'lazy'}"`;
+
+const card = (p, eager = false) => `<a class="card" data-nav href="/p/${p.slug}">
+  <span class="thumb"><img src="${thumbSrc(p)}" width="220" height="165" ${loadAttr(eager)} decoding="async" alt="${esc(p.name)}"></span>
   <span class="pname">${esc(p.name)}</span>
   <span class="pcat">${esc(p.catName)}</span>
   <span class="meta"><b class="price">${money(p.price)}</b><span class="rate" title="${p.rating.toFixed(1)} of 5">${stars(p.rating)}</span></span>
-  <span class="cardfoot"><span class="badge ${p.stock ? 'in' : 'out'}">${p.stock ? 'In stock' : 'Backorder'}</span>${p.stock ? `<button class="qadd" type="button" data-add data-id="${p.id}" data-name="${esc(p.name)}" data-price="${p.price}" data-img="${p.img}" data-slug="${p.slug}">Add +</button>` : ''}</span>
+  <span class="cardfoot"><span class="badge ${p.stock ? 'in' : 'out'}">${p.stock ? 'In stock' : 'Backorder'}</span>${p.stock ? `<button class="qadd" type="button" data-add data-id="${p.id}" data-name="${esc(p.name)}" data-price="${p.price}" data-img="${thumbSrc(p)}" data-slug="${p.slug}">Add +</button>` : ''}</span>
 </a>`;
-const grid = items => `<div class="grid">${items.map(card).join('')}</div>`;
+const grid = (items, eagerCount = 8) => `<div class="grid">${items.map((p, i) => card(p, i < eagerCount)).join('')}</div>`;
 
-const deptTile = c => {
+const deptTile = (c, index = 0) => {
   const items = byCat[c.slug];
-  const thumbs = items.slice(0, 4).map(p => `<img src="${p.img}" alt="" loading="eager" width="92" height="70" decoding="async">`).join('');
+  const eager = index < 2;
+  const thumbs = items.slice(0, 4).map(p => `<img src="${deptSrc(p)}" alt="" ${loadAttr(eager)} width="92" height="70" decoding="async">`).join('');
   return `<a class="dept" data-nav href="/c/${c.slug}"><span class="dept-imgs">${thumbs}</span><span class="dept-name"><span class="di">${ICON[c.slug]}</span>${esc(c.name)}<span class="dept-n">${items.length} products</span></span></a>`;
 };
 
@@ -91,7 +96,7 @@ function homeView() {
     <h2 class="sec">Shop by department</h2>
     <div class="depts">${CATEGORIES.map(deptTile).join('')}</div>
     <h2 class="sec">Popular this week</h2>
-    ${grid(featured.concat(byCat['live-plants'].slice(0, 2)))}`;
+    ${grid(featured.concat(byCat['live-plants'].slice(0, 2)), 0)}`;
 }
 
 function categoryView(slug) {
@@ -112,7 +117,7 @@ function productView(slug) {
   const rel = byCat[p.cat].filter(x => x.slug !== p.slug).slice(0, 5);
   const buy = p.stock
     ? `<div class="buyrow"><div class="qsel"><button type="button" data-q="-1" aria-label="Decrease">−</button><input id="qv" value="1" readonly aria-label="Quantity"><button type="button" data-q="1" aria-label="Increase">+</button></div>
-       <button class="buy" data-add data-qty="qv" data-id="${p.id}" data-name="${esc(p.name)}" data-price="${p.price}" data-img="${p.img}" data-slug="${p.slug}">Add to cart</button></div>`
+       <button class="buy" data-add data-qty="qv" data-id="${p.id}" data-name="${esc(p.name)}" data-price="${p.price}" data-img="${thumbSrc(p)}" data-slug="${p.slug}">Add to cart</button></div>`
     : `<div class="buyrow"><button class="buy" disabled>Notify me when in stock</button></div>`;
   return `<nav class="crumb"><a data-nav href="/">Store</a><span>›</span><a data-nav href="/c/${p.cat}">${esc(p.catName)}</a><span>›</span>${esc(p.name)}</nav>
     <div class="detail">
@@ -129,7 +134,7 @@ function productView(slug) {
       </div>
     </div>
     <h2 class="sec">More from ${esc(p.catName)}</h2>
-    ${grid(rel)}`;
+    ${grid(rel, 0)}`;
 }
 
 function searchProducts(q) {
@@ -147,7 +152,7 @@ function searchView(q) {
   const head = `<nav class="crumb"><a data-nav href="/">Store</a><span>›</span>Search</nav>
     <header class="pagehead"><h1>Search results</h1><p class="lede">“${esc(q)}” - ${items.length} match${items.length === 1 ? '' : 'es'}</p></header>`;
   if (!items.length) return `${head}<p class="empty">No products match “${esc(q)}”. Try <a data-nav href="/c/freshwater-fish">freshwater fish</a>, “filter”, “plant”, or “tank”.</p>`;
-  return head + grid(items);
+  return head + grid(items, 8);
 }
 
 const cartShellView = () => `<div data-cart-root><h1>Your Cart</h1><p class="muted">Loading your cart…</p></div>`;
@@ -160,13 +165,13 @@ const sidebar = active => `<aside class="sidebar"><div class="side-h">Shop by De
   <div class="side-promo"><b>${UI_ICON.shield} Live arrival guarantee</b><span>Free shipping over $49 · ships same day</span></div></aside>`;
 
 const footer = `<footer class="site"><div class="foot-in">
-  <div class="foot-col"><h4>Shop</h4>${CATEGORIES.slice(0, 6).map(c => `<a data-nav href="/c/${c.slug}">${esc(c.name)}</a>`).join('')}</div>
-  <div class="foot-col"><h4>More</h4>${CATEGORIES.slice(6).map(c => `<a data-nav href="/c/${c.slug}">${esc(c.name)}</a>`).join('')}</div>
-  <div class="foot-col"><h4>Help</h4><a>Shipping &amp; delivery</a><a>Live arrival guarantee</a><a>Returns</a><a>Care guides</a><a>Contact us</a></div>
+  <div class="foot-col"><h2 class="foot-h">Shop</h2>${CATEGORIES.slice(0, 6).map(c => `<a data-nav href="/c/${c.slug}">${esc(c.name)}</a>`).join('')}</div>
+  <div class="foot-col"><h2 class="foot-h">More</h2>${CATEGORIES.slice(6).map(c => `<a data-nav href="/c/${c.slug}">${esc(c.name)}</a>`).join('')}</div>
+  <div class="foot-col"><h2 class="foot-h">Help</h2><a href="#" data-demo-link>Shipping &amp; delivery</a><a href="#" data-demo-link>Live arrival guarantee</a><a href="#" data-demo-link>Returns</a><a href="#" data-demo-link>Care guides</a><a href="#" data-demo-link>Contact us</a></div>
   <div class="foot-col foot-brand"><div class="brand-f">Aquatic&nbsp;Haven</div><p>Fish, plants &amp; aquarium gear, shipped same day from our facility. 98% of orders ship within 24 hours.</p></div>
   </div><div class="foot-bot">© 2026 Aquatic Haven · A demo store built with McMaster-Carr performance techniques.</div></footer>`;
 
-const CRITICAL = `:root{--ink:#13262e;--mut:#5d7079;--sea:#0b7a9b;--deep:#063b4c;--green:#137a42;--gold:#f4b81f;--coral:#f5793b;--line:#dde7ea;--bg:#f3f7f8;--tile:#f8fbfc;--mh:56px}
+const CRITICAL = `:root{--ink:#13262e;--mut:#5d7079;--sea:#08718f;--deep:#063b4c;--green:#137a42;--gold:#f4b81f;--coral:#f5793b;--line:#dde7ea;--bg:#f3f7f8;--tile:#f8fbfc;--mh:56px}
 *{box-sizing:border-box}html,body{margin:0}body{font:14px/1.5 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:#fff}
 a{color:inherit;text-decoration:none}button{font:inherit}
 .promo{background:var(--deep);color:#d7eef5;font-size:12.5px;text-align:center;padding:5px 12px;letter-spacing:.01em}
@@ -192,7 +197,7 @@ a{color:inherit;text-decoration:none}button{font:inherit}
 .deptnav{display:flex;flex-direction:column}
 .deptnav a{display:flex;align-items:center;gap:10px;padding:8px 18px;font-size:13.5px;border-left:3px solid transparent}
 .deptnav a:hover{background:var(--bg)}.deptnav a.active{background:#e9f5f9;color:var(--sea);font-weight:700;border-left-color:var(--sea)}
-.di{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;margin-right:.35em;color:currentColor;flex:none}.deptnav .di{margin-right:0;color:#477282}.dn-name{flex:1}.dn-n{font-size:11px;color:#90a6ad;background:var(--bg);border-radius:9px;padding:1px 7px}
+.di{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;margin-right:.35em;color:currentColor;flex:none}.deptnav .di{margin-right:0;color:#477282}.dn-name{flex:1}.dn-n{font-size:11px;color:#536970;background:var(--bg);border-radius:9px;padding:1px 7px}
 .side-promo{margin:14px 14px 0;padding:12px;background:linear-gradient(135deg,#e9f5f9,#f3f7f8);border:1px solid var(--line);border-radius:9px;font-size:12px;display:flex;flex-direction:column;gap:4px;color:var(--mut)}.side-promo b{color:var(--ink);display:flex;align-items:center;gap:7px}.side-promo .i{color:var(--sea);width:17px;height:17px}
 .content{flex:1;min-width:0;padding:18px 26px 30px;max-width:1320px}
 main{min-width:0}
@@ -201,7 +206,7 @@ h2.sec{font-size:16px;margin:26px 0 13px;padding-bottom:7px;border-bottom:2px so
 .crumb{color:var(--mut);font-size:12.5px;margin-bottom:8px;display:flex;gap:7px;flex-wrap:wrap}.crumb a{color:var(--sea)}.crumb span{color:#b7c6cb}
 .pagehead h1{margin-bottom:.1em}.lede{color:var(--mut);margin:.1em 0 .2em;max-width:70ch}
 .toolbar{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);background:var(--tile);border-radius:7px;padding:8px 13px;margin:12px 0 14px;font-size:13px}
-.hero{background:linear-gradient(90deg,rgba(4,34,42,.92),rgba(4,48,57,.72) 44%,rgba(4,48,57,.16)),url('/assets/${VER}/img/hero-aquarium-bg.jpg') center right/cover;color:#fff;border-radius:12px;padding:30px 32px;overflow:hidden;min-height:210px;display:flex;align-items:center}
+.hero{background:linear-gradient(90deg,rgba(4,34,42,.92),rgba(4,48,57,.72) 44%,rgba(4,48,57,.16)),url('/assets/${VER}/img/hero-aquarium-bg.webp') center right/cover;color:#fff;border-radius:12px;padding:30px 32px;overflow:hidden;min-height:210px;display:flex;align-items:center}
 .hero-txt{max-width:680px}
 .hero .eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#bfe6f0}
 .hero h1{font-size:30px;margin:.2em 0;color:#fff}.hero p{max-width:62ch;color:#e4f3f7;margin:.2em 0 1em}
@@ -257,7 +262,7 @@ h2.sec{font-size:16px;margin:26px 0 13px;padding-bottom:7px;border-bottom:2px so
 .ordered{background:#e3f5ea;border:1px solid #bfe6cd;color:#13693c;padding:18px;border-radius:11px;max-width:620px}.ordered a{color:var(--green);font-weight:700}
 footer.site{background:var(--deep);color:#bcd9e2;margin-top:40px}
 .foot-in{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;max-width:1100px;margin:0 auto;padding:34px 26px}
-.foot-col h4{color:#fff;font-size:13px;margin:0 0 10px;text-transform:uppercase;letter-spacing:.05em}
+.foot-h{color:#fff;font-size:13px;margin:0 0 10px;text-transform:uppercase;letter-spacing:.05em}
 .foot-col a{display:block;color:#bcd9e2;font-size:13px;padding:3px 0}.foot-col a:hover{color:#fff}
 .brand-f{font-size:18px;font-weight:800;color:#fff;margin-bottom:8px}.foot-col p{font-size:12.5px;line-height:1.55}
 .foot-bot{border-top:1px solid rgba(255,255,255,.12);text-align:center;font-size:12px;padding:14px;color:#8fb6c2}
@@ -270,21 +275,22 @@ const shell = (main, title, active) => `<!DOCTYPE html>
 <title>${esc(title)} · Aquatic Haven</title>
 <meta name="description" content="Aquatic Haven: fish, plants, and aquarium gear shipped same day.">
 <link rel="dns-prefetch" href="//upload.wikimedia.org">
-<link rel="preload" href="/assets/${VER}/app.js" as="script">
+<link rel="preload" href="/assets/${VER}/app.min.js" as="script">
 <link rel="preload" href="/assets/${VER}/main.css" as="style">
-<link rel="preload" href="/assets/${VER}/img/aquatic-haven-logo-64.png" as="image">
+<link rel="preload" href="/assets/${VER}/img/hero-aquarium-bg.webp" as="image" fetchpriority="high">
+<link rel="preload" href="/assets/${VER}/img/aquatic-haven-logo-40.webp" as="image">
 <link rel="icon" type="image/png" href="/assets/${VER}/img/aquatic-haven-logo-64.png">
 <style>${CRITICAL}</style>
 </head><body>
 <div class="promo"><b>Live arrival guarantee</b> · Free shipping over $49 · 98% of orders ship same day</div>
-<header class="masthead"><a class="brand" data-nav href="/"><img class="brand-mark" src="/assets/${VER}/img/aquatic-haven-logo-64.png" width="36" height="36" alt=""><span class="brand-copy"><span class="brand-name">Aquatic Haven</span><span class="brand-sub">Aquarium Supply</span></span></a>
+<header class="masthead"><a class="brand" data-nav href="/"><img class="brand-mark" src="/assets/${VER}/img/aquatic-haven-logo-40.webp" width="40" height="40" alt=""><span class="brand-copy"><span class="brand-name">Aquatic Haven</span><span class="brand-sub">Aquarium Supply</span></span></a>
 <form class="search" role="search" autocomplete="off"><input id="q" name="q" type="search" placeholder="Search ${PRODUCTS.length} products: fish, plants, gear" aria-label="Search" autocomplete="off"><button class="sbtn" type="submit">Search</button><div id="suggest" class="suggest" hidden></div></form>
 <span class="acct"><a>Account</a><a class="cartlink" data-cart href="/cart">${UI_ICON.cart}Cart <span id="cc" class="cc" hidden>0</span></a></span></header>
 <div class="shellwrap">${sidebar(active)}<div class="content"><main id="app">${main}</main></div></div>
 ${footer}
 <div id="flash"></div>
 <link rel="stylesheet" href="/assets/${VER}/main.css" media="print" onload="this.media='all'">
-<script src="/assets/${VER}/app.js" defer></script>
+<script src="/assets/${VER}/app.min.js" defer></script>
 </body></html>`;
 
 // ---------- routing ----------
@@ -292,7 +298,7 @@ const send = (res, status, body, headers = {}) => { res.writeHead(status, header
 const DOC = { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-cache' };
 const IMMUTABLE = { 'cache-control': 'public, max-age=31536000, immutable' };
 const NOCACHE = { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-cache' };
-const MIME = { '.js': 'text/javascript', '.css': 'text/css', '.jpg': 'image/jpeg', '.png': 'image/png', '.svg': 'image/svg+xml' };
+const MIME = { '.js': 'text/javascript', '.css': 'text/css', '.jpg': 'image/jpeg', '.png': 'image/png', '.svg': 'image/svg+xml', '.webp': 'image/webp' };
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);

@@ -8,7 +8,9 @@
   var ccEl = document.getElementById('cc');
   var fmt = function (n) { return '$' + n.toFixed(2); };
   var base = (window.AH_BASE || '').replace(/\/$/, '');
+  var productsUrl = window.AH_PRODUCTS_URL || '';
   var staticProducts = Array.isArray(window.AH_PRODUCTS) ? window.AH_PRODUCTS : null;
+  var productsPromise = null;
 
   function toUrl(path) {
     if (!path || /^(https?:|mailto:|#)/.test(path)) return path;
@@ -89,7 +91,7 @@
   var imageWarmups = [];
   function wakeImages(root) {
     root = root || app;
-    root.querySelectorAll('.card img, .dept-imgs img, .detail-media img, .cart-row img').forEach(function (img) {
+    root.querySelectorAll('img[loading="eager"], .detail-media img, .cart-row img').forEach(function (img) {
       img.loading = 'eager';
       if (img.complete && img.naturalWidth > 0) return;
       var src = img.currentSrc || img.src;
@@ -117,15 +119,27 @@
       return { p: p, score: score };
     }).filter(Boolean).sort(function (a, b) { return b.score - a.score; }).map(function (x) { return x.p; });
   }
+  function loadProducts() {
+    if (staticProducts) return Promise.resolve(staticProducts);
+    if (!productsUrl) return Promise.resolve(null);
+    if (!productsPromise) {
+      productsPromise = fetch(productsUrl).then(function (r) { return r.json(); }).then(function (list) {
+        staticProducts = Array.isArray(list) ? list : [];
+        return staticProducts;
+      });
+    }
+    return productsPromise;
+  }
 
-  function cardHtml(p) {
+  function cardHtml(p, eager) {
+    var img = p.thumb || p.img;
     return '<a class="card" data-nav href="' + toUrl('/p/' + p.slug) + '">' +
-      '<span class="thumb"><img src="' + p.img + '" width="220" height="165" loading="eager" decoding="async" alt="' + esc(p.name) + '"></span>' +
+      '<span class="thumb"><img src="' + img + '" width="220" height="165" loading="' + (eager ? 'eager' : 'lazy') + '" decoding="async" alt="' + esc(p.name) + '"></span>' +
       '<span class="pname">' + esc(p.name) + '</span>' +
       '<span class="pcat">' + esc(p.catName) + '</span>' +
       '<span class="meta"><b class="price">' + fmt(p.price) + '</b><span class="rate" title="' + p.rating.toFixed(1) + ' of 5">' + stars(p.rating) + '</span></span>' +
       '<span class="cardfoot"><span class="badge ' + (p.stock ? 'in' : 'out') + '">' + (p.stock ? 'In stock' : 'Backorder') + '</span>' +
-      (p.stock ? '<button class="qadd" type="button" data-add data-id="' + p.id + '" data-name="' + esc(p.name) + '" data-price="' + p.price + '" data-img="' + p.img + '" data-slug="' + p.slug + '">Add +</button>' : '') +
+      (p.stock ? '<button class="qadd" type="button" data-add data-id="' + p.id + '" data-name="' + esc(p.name) + '" data-price="' + p.price + '" data-img="' + img + '" data-slug="' + p.slug + '">Add +</button>' : '') +
       '</span></a>';
   }
 
@@ -134,7 +148,7 @@
     var head = '<nav class="crumb"><a data-nav href="' + toUrl('/') + '">Store</a><span>›</span>Search</nav>' +
       '<header class="pagehead"><h1>Search results</h1><p class="lede">"' + esc(q) + '" - ' + items.length + ' match' + (items.length === 1 ? '' : 'es') + '</p></header>';
     if (!items.length) return head + '<p class="empty">No products match "' + esc(q) + '". Try <a data-nav href="' + toUrl('/c/freshwater-fish') + '">freshwater fish</a>, "filter", "plant", or "tank".</p>';
-    return head + '<div class="grid">' + items.map(cardHtml).join('') + '</div>';
+    return head + '<div class="grid">' + items.map(function (p, i) { return cardHtml(p, i < 8); }).join('') + '</div>';
   }
 
   function handleCartAct(btn) {
@@ -164,9 +178,9 @@
   function prefetch(href) {
     href = fromUrl(href);
     if (cache.has(href)) return cache.get(href);
-    if (staticProducts && appPath(href) === '/search') {
+    if ((staticProducts || productsUrl) && appPath(href) === '/search') {
       var q = new URLSearchParams(href.split('?')[1] || '').get('q') || '';
-      var local = Promise.resolve(staticSearchHtml(q));
+      var local = loadProducts().then(function () { return staticSearchHtml(q); });
       cache.set(href, local);
       return local;
     }
@@ -225,6 +239,8 @@
     }
     var cact = e.target.closest('[data-cart-act]'); if (cact) { handleCartAct(cact); return; }
     var cartL = e.target.closest('a[data-cart]'); if (cartL) { e.preventDefault(); show('/cart', true); return; }
+    var demoL = e.target.closest('a[data-demo-link]');
+    if (demoL) { e.preventDefault(); note('This is just a demo silly goose'); return; }
     var a = navLink(e);
     if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
     e.preventDefault();
@@ -252,10 +268,12 @@
   var doSuggest = debounce(function () {
     var qv = input.value.trim();
     if (!qv) { hideSuggest(); return; }
-    if (staticProducts) {
-      renderSuggest(productMatches(qv).slice(0, 7).map(function (p) {
-        return { name: p.name, slug: p.slug, catName: p.catName, price: p.price };
-      }));
+    if (staticProducts || productsUrl) {
+      loadProducts().then(function () {
+        renderSuggest(productMatches(qv).slice(0, 7).map(function (p) {
+          return { name: p.name, slug: p.slug, catName: p.catName, price: p.price };
+        }));
+      }).catch(hideSuggest);
       return;
     }
     fetch(toUrl('/api/suggest?q=' + encodeURIComponent(qv))).then(function (r) { return r.json(); }).then(renderSuggest).catch(hideSuggest);
@@ -295,10 +313,12 @@
   var initialPath = fromUrl(location.pathname + location.search);
   history.replaceState({ href: initialPath }, '', location.href);
   if (appPath(initialPath) === '/cart') renderCart();
-  else if (staticProducts && appPath(initialPath) === '/search') {
-    app.innerHTML = staticSearchHtml(new URLSearchParams(initialPath.split('?')[1] || '').get('q') || '');
-    wakeImages(app);
-    setActive('');
+  else if ((staticProducts || productsUrl) && appPath(initialPath) === '/search') {
+    loadProducts().then(function () {
+      app.innerHTML = staticSearchHtml(new URLSearchParams(initialPath.split('?')[1] || '').get('q') || '');
+      wakeImages(app);
+      setActive('');
+    });
   } else {
     wakeImages(app);
     setActive(initialPath);
